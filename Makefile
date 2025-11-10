@@ -1,68 +1,25 @@
-# OS X
-ARCH = $(shell uname)
-ifeq ($(ARCH),Darwin)
-        LDFLAGS = -framework GLUT -framework OpenGL -framework Cocoa
-else
-        $(error This OS is not Mac OSX. Aborting. Please run linuxmake.mk)
-endif
+# Windows (MSYS2).
 
-mkdir=mkdir -p
-rm=rm -f
-AR=ar cq
-RANLIB=ranlib
+LDFLAGS = -lopengl32 -lglu32 -lfreeglut -lwinmm
 
+# Demo files path.
+DEMOPATH = ./src/demos/
 
-# CYCLONEPHYSICS LIB
-CXXFLAGS=-O2 -Iinclude -fPIC
-CYCLONEOBJS=src/body.o src/collide_coarse.o src/collide_fine.o src/contacts.o src/core.o src/fgen.o src/joints.o src/particle.o src/pcontacts.o src/pfgen.o src/plinks.o src/pworld.o src/random.o src/world.o
+# Demo core files.
+DEMOCOREFILES = $(DEMOPATH)main.cpp $(DEMOPATH)app.cpp $(DEMOPATH)timing.cpp
 
+# Demo files.
+DEMOLIST = ballistic bigballistic blob bridge explosion fireworks flightsim fracture platform ragdoll sailboat
 
-# DEMO FILES
+# Cyclone core files.
+CYCLONEFILES = ./src/body.cpp ./src/collide_coarse.cpp ./src/collide_fine.cpp ./src/contacts.cpp ./src/core.cpp ./src/fgen.cpp ./src/joints.cpp ./src/particle.cpp ./src/pcontacts.cpp ./src/pfgen.cpp ./src/plinks.cpp ./src/pworld.cpp ./src/random.cpp ./src/world.cpp
 
-LIBNAME=libcyclone.a
-CYCLONELIB=./lib/linux/$(LIBNAME)
+.PHONY: clean
 
-DEMO_CPP=./src/demos/app.cpp ./src/demos/timing.cpp ./src/demos/main.cpp
+all: $(DEMOLIST)
 
-DEMOS=ballistic bigballistic blob bridge explosion fireworks flightsim fracture platform ragdoll sailboat
-
-
-# OUTPUT DIRECTORIES
-
-OUTDIRS=./lib/linux ./bin/linux
-
-
-
-# BUILD COMMANDS
-
-all:	out_dirs $(CYCLONELIB) $(DEMOS)
-
-
-out_dirs:
-	$(mkdir) $(OUTDIRS)
-
-
-$(CYCLONELIB): $(CYCLONEOBJS)
-	$(rm) $@
-	$(AR) $@ $(CYCLONEOBJS)
-	$(RANLIB) $@
-
-
-$(DEMOS):
-	$(CXX) $(CXXFLAGS) -o ./bin/linux/$@ $(DEMO_CPP) $(CYCLONELIB) ./src/demos/$@/$@.cpp $(LDFLAGS)
-
+$(DEMOLIST):
+	g++ -O2 -Iinclude $(DEMOCOREFILES) $(CYCLONEFILES) $(DEMOPATH)$@/$@.cpp -o $@ $(LDFLAGS) 
 
 clean:
-	$(rm) src/*.o lib/linux/libcyclone.a
-	$(rm)		\
-	./bin/linux/fireworks		\
-	./bin/linux/fracture		\
-	./bin/linux/flightsim		\
-	./bin/linux/bridge		\
-	./bin/linux/sailboat		\
-	./bin/linux/explosion		\
-	./bin/linux/ballistic		\
-	./bin/linux/platform		\
-	./bin/linux/bigballistic	\
-	./bin/linux/blob		\
-	./bin/linux/ragdoll
+	rm $(DEMOLIST)
